@@ -1,1 +1,2 @@
-First version
+Another version
+inline!inline_content.txt
