@@ -1,2 +1,2 @@
 Another version
-inline!inline_content.txt
+!inline:inline_content.txt
