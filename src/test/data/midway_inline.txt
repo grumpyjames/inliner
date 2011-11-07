@@ -1,0 +1,3 @@
+In computer programming!inline:midway_cutout.txt
+
+In reality, more descriptive variable names are recommended

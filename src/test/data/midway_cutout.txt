@@ -1,0 +1,4 @@
+, some oft used variable names are as follows:
+
+Foo
+Bar

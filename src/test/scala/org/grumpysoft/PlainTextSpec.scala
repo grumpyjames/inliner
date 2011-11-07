@@ -12,6 +12,7 @@ class PlainTextSpec extends Specification {
         "be the template with the specified content inlined"           ! e1^
         "inline recursively"                                           ! e2^
         "figure out the path of the referred file may be relative"     ! e3^
+        "from any part of a line"                                      ! e4^
   end
 
 
@@ -41,8 +42,10 @@ In reality, more descriptive variable names are recommended"""
   def converted = inline(template)
   def recursive_inline = inline(recursive_template)
   def converted_from_file = inline(new File("src/test/data/inliner_template.txt"))
+  def inline_with_midline_invocation = inline(new File("src/test/data/midway_inline.txt"))
 
   def e1 = converted must_== inline_result
   def e2 = recursive_inline must_== inline_result
   def e3 = converted_from_file must_== inline_result
+  def e4 = inline_with_midline_invocation must_== inline_result
 }

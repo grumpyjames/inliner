@@ -37,16 +37,27 @@ object Inliner {
       .lines.map(doReplacements(_, relativeFinder(new File(fileAndVersion(0))))).reduceLeft(_ + "\n" + _).stripLineEnd
   }
 
+  def doBashReplacement(bashCmd: String, finder: String => File) : String = {
+    val delimitedCmd: Array[String] = bashCmd.split('`')
+    val shellCmd = delimitedCmd(1)
+    Process(shellCmd).lines.map(doReplacements(_, finder)).reduceLeft(_ + "\n" + _) + delimitedCmd(2)
+  }
+
   def doReplacements(line: String, fileFinder: String => File) : String = {
-    if (line.startsWith("!inline")) {
-      val splitByColon = line.split(':')
+    val splitByColon = line.split("!inline:")
+    if (splitByColon.size > 1) {
       val inlineInvocation = splitByColon(1)
       val splitByPlus = line.split('+')
       if (splitByPlus.size > 1) {
-        doGitReplacement(splitByPlus(1))
+        val invocationType: String = splitByPlus(0).split(':')(1)
+        invocationType match {
+          case "git" => splitByColon(0) + doGitReplacement(splitByPlus(1))
+          case "bash" => splitByColon(0) + doBashReplacement(splitByPlus(1), fileFinder)
+        }
+
       } else {
         val toInline = fileFinder(inlineInvocation)
-        fileAsLines(toInline).map(doReplacements(_, FileFinder.relativeFinder(toInline))).reduceLeft(_ + "\n" + _)
+        splitByColon(0) + fileAsLines(toInline).map(doReplacements(_, FileFinder.relativeFinder(toInline))).reduceLeft(_ + "\n" + _)
       }
     } else {
       line
