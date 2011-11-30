@@ -6,6 +6,7 @@ import java.lang.String
 
 object Inliner {
   import FileFinder.relativeFinder
+  import InlineExpressionParser.parse
 
   type Finder = String => File
 
@@ -25,20 +26,8 @@ object Inliner {
     scala.io.Source.fromFile(file).getLines()
   }
 
-  private def doGitReplacement(gitCmd: String) : String = {
-    // assumes: . is a git directory
-    // format like src/test/data/many_versioned_file@428de6
-    val fileAndVersion = gitCmd.split("@")
-    val filePath: String = fileAndVersion(0)
-    val showInvocation: String = "git show " + fileAndVersion(1) + ":" + filePath
-    // annoyingly git ends with a newline, so we have to strip it.
-    replaceThenJoin(Process(showInvocation).lines, relativeFinder(new File(filePath))).stripLineEnd
-  }
-
-  private def doBashReplacement(bashCmd: String, finder: Finder) : String = {
-    val delimitedCmd: Array[String] = bashCmd.split('`')
-    val shellCmd = delimitedCmd(1)
-    replaceThenJoin(Process(shellCmd).lines, finder) + delimitedCmd(2)
+  private def doCmdLineInvoc(command: String) : String = {
+    replaceThenJoin(Process(command).lines, defaultFileFinder).stripLineEnd
   }
 
   private def replaceThenJoin(lines: TraversableOnce[String], finder: Finder) : String = {
@@ -46,19 +35,15 @@ object Inliner {
   }
 
   private def doReplacements(line: String, fileFinder: Finder) : String = {
-    val splitByColon = line.split("!inline:")
-    if (splitByColon.size == 1) return line
+    val splitByInline = line.split("!inline\\(")
+    if (splitByInline.size == 1) return line
 
-    val splitByPlus = line.split('+')
-    if (splitByPlus.size == 1) {
-      val toInline = fileFinder(splitByColon(1))
-      return splitByColon(0) + fileAsLines(toInline).map(doReplacements(_, FileFinder.relativeFinder(toInline))).reduceLeft(_ + "\n" + _)
-    }
-
-    val invocationType: String = splitByPlus(0).split(':')(1)
-    invocationType match {
-      case "git" => splitByColon(0) + doGitReplacement(splitByPlus(1))
-      case "bash" => splitByColon(0) + doBashReplacement(splitByPlus(1), fileFinder)
+    val parseResult = parse(splitByInline.tail.reduceLeft(_ + "!inline(" + _))
+    if (parseResult.inlineExpr.startsWith("file://")) {
+      val toInline = fileFinder(parseResult.inlineExpr.substring(7))
+      splitByInline(0) + fileAsLines(toInline).map(doReplacements(_, FileFinder.relativeFinder(toInline))).reduceLeft(_ + "\n" + _)
+    } else {
+      splitByInline(0) + doCmdLineInvoc(parseResult.inlineExpr) + doReplacements(parseResult.leftOver, fileFinder)
     }
   }
 }

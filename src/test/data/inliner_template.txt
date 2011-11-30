@@ -1,5 +1,5 @@
 In computer programming, some oft used variable names are as follows:
 
-!inline:inline_content.txt
+!inline(file://inline_content.txt)
 
 In reality, more descriptive variable names are recommended

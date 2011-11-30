@@ -13,13 +13,13 @@ class GitShowSpec extends Specification {
     end
 
   val result = "First version"
-  val template = "!inline:git+src/test/data/many_versioned_file.txt@428de6"
+  val template = "!inline(git show 428de6:src/test/data/many_versioned_file.txt)"
 
   val resultWithNestedInline =
   """Another version
 Foo
 Bar"""
-  val templateWithNestedInline = "!inline:git+src/test/data/many_versioned_file.txt@13f151"
+  val templateWithNestedInline = "!inline(git show 999d6a:src/test/data/many_versioned_file.txt)"
 
 
   def e1 = inline(template) must_==result

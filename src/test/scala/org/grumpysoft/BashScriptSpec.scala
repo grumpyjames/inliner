@@ -10,12 +10,16 @@ class BashScriptSpec extends Specification {
       "When inlining a bash script" ^
       "The content should be the stdout of the bash script"   ! e1 ^
       "Any inlines in that content must also be inlined"      ! e2 ^
+      "Can have two distinct inlines within the same line"    ! e3 ^
   end
 
   val expectedOutput = "foo, bar, baz"
-  val inlineTemplate = """foo, !inline:bash+`echo bar`, baz"""
-  val inlineTemplateWithAnotherInline = """foo, !inline:bash+`echo !inline:src/test/data/just_bar.txt`, baz"""
+  val inlineTemplate = """foo, !inline(echo bar), baz"""
+  val inlineTemplateWithAnotherInline = """foo, !inline(echo !inline(file://src/test/data/just_bar.txt)), baz"""
+  val twoInlines = """foo, !inline(echo bar), baz, !inline(echo quux)"""
+
 
   def e1 = inline(inlineTemplate) must_==expectedOutput
   def e2 = inline(inlineTemplateWithAnotherInline) must_==expectedOutput
+  def e3 = inline(twoInlines) must_=="foo, bar, baz, quux"
 }

@@ -19,13 +19,13 @@ class PlainTextSpec extends Specification {
   val template =
 """In computer programming, some oft used variable names are as follows:
 
-!inline:src/test/data/inline_content.txt
+!inline(file://src/test/data/inline_content.txt)
 
 In reality, more descriptive variable names are recommended"""
   val recursive_template =
 """In computer programming, some oft used variable names are as follows:
 
-!inline:src/test/data/inliner_content_with_another_inline.txt
+!inline(file://src/test/data/inliner_content_with_another_inline.txt)
 
 In reality, more descriptive variable names are recommended"""
 
