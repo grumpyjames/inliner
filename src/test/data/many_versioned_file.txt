@@ -1,2 +1,2 @@
 Another version
-!inline:inline_content.txt
+!inline(file://inline_content.txt)
