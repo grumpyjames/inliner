@@ -3,6 +3,7 @@ package org.grumpysoft
 import java.io.File
 import scala.sys.process.Process
 import java.lang.String
+import annotation.tailrec
 
 object Inliner {
   import FileFinder.relativeFinder
@@ -35,16 +36,22 @@ object Inliner {
   }
 
   private def doReplacements(line: String, fileFinder: Finder) : String = {
-    val splitByInline = line.split("!inline\\(")
-    if (splitByInline.size == 1) return line
-
-    val parseResult = parse(splitByInline.tail.reduceLeft(_ + "!inline(" + _))
-    if (parseResult.inlineExpr.startsWith("file://")) {
-      val toInline = fileFinder(parseResult.inlineExpr.substring(7))
-      splitByInline(0) + fileAsLines(toInline).map(doReplacements(_, FileFinder.relativeFinder(toInline))).reduceLeft(_ + "\n" + _)
-    } else {
-      splitByInline(0) + doCmdLineInvoc(parseResult.inlineExpr) + doReplacements(parseResult.leftOver, fileFinder)
+    line.indexOf("!inline(") match {
+      case -1 => line
+      case a: Int => {
+        val parseResult = parse(line.substring(a + 8))
+        if (parseResult.inlineExpr.startsWith("file://")) {
+          val toInline = fileFinder(parseResult.inlineExpr.substring(7))
+          line.substring(0, a) +
+            fileAsLines(toInline).map(doReplacements(_, FileFinder.relativeFinder(toInline))).reduceLeft(_ + "\n" + _) +
+            doReplacements(parseResult.leftOver, fileFinder)
+        } else {
+          line.substring(0, a) + doCmdLineInvoc(parseResult.inlineExpr) + doReplacements(parseResult.leftOver, fileFinder)
+        }
+      }
     }
+
+
   }
 }
 

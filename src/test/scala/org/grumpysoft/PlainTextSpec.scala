@@ -13,6 +13,7 @@ class PlainTextSpec extends Specification {
         "inline recursively"                                           ! e2^
         "figure out the path of the referred file may be relative"     ! e3^
         "from any part of a line"                                      ! e4^
+        "be able to include more than a single invocation per line"    ! e5^
   end
 
 
@@ -37,6 +38,8 @@ Bar
 
 In reality, more descriptive variable names are recommended"""
 
+  val two_file_inlines_on_the_same_line = "!inline(file://src/test/data/just_bar.txt) !inline(file://src/test/data/just_bar.txt)"
+
 
 
   def converted = inline(template)
@@ -48,4 +51,5 @@ In reality, more descriptive variable names are recommended"""
   def e2 = recursive_inline must_== inline_result
   def e3 = converted_from_file must_== inline_result
   def e4 = inline_with_midline_invocation must_== inline_result
+  def e5 = inline(two_file_inlines_on_the_same_line) must_== "bar bar"
 }
