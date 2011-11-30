@@ -1,2 +1,2 @@
 Another version
-!inline(file://inline_content.txt)
+!inline(file://src/test/data/inline_content.txt)
