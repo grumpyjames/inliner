@@ -1,11 +1,20 @@
 package org.grumpysoft
 
-import java.io.File
 import scala.sys.process.Process
 import java.lang.String
-import annotation.tailrec
+import java.io.{BufferedReader, InputStreamReader, File}
 
 object Inliner {
+  def main(args: Array[String]) {
+    val converter = new InputStreamReader(System.in)
+    val reader = new BufferedReader(converter)
+    var thisLine: String = reader.readLine
+    while (thisLine != null) {
+      System.out.println(doReplacements(thisLine, defaultFileFinder));
+      thisLine = reader.readLine
+    }
+  }
+
   import FileFinder.relativeFinder
   import InlineExpressionParser.parse
 
@@ -28,7 +37,8 @@ object Inliner {
   }
 
   private def doCmdLineInvoc(command: String) : String = {
-    replaceThenJoin(Process(command).lines, defaultFileFinder).stripLineEnd
+    val pipedCommand = command.split('|').map(_.trim()).map(Process(_)).reduceLeft(_ #| _)
+    replaceThenJoin(pipedCommand.lines, defaultFileFinder).stripLineEnd
   }
 
   private def replaceThenJoin(lines: TraversableOnce[String], finder: Finder) : String = {
@@ -43,7 +53,7 @@ object Inliner {
         if (parseResult.inlineExpr.startsWith("file://")) {
           val toInline = fileFinder(parseResult.inlineExpr.substring(7))
           line.substring(0, a) +
-            fileAsLines(toInline).map(doReplacements(_, FileFinder.relativeFinder(toInline))).reduceLeft(_ + "\n" + _) +
+            replaceThenJoin(fileAsLines(toInline), FileFinder.relativeFinder(toInline)) +
             doReplacements(parseResult.leftOver, fileFinder)
         } else {
           line.substring(0, a) + doCmdLineInvoc(parseResult.inlineExpr) + doReplacements(parseResult.leftOver, fileFinder)
