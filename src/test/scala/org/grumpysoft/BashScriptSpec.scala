@@ -12,6 +12,7 @@ class BashScriptSpec extends Specification {
       "Any inlines in that content must also be inlined"      ! e2 ^
       "Can have two distinct inlines within the same line"    ! e3 ^
       "Can pipe within an inline"                             ! e4 ^
+      "Can deal with quoted pipes in inline"                  ! e5 ^
   end
 
   val expectedOutput = "foo, bar, baz"
@@ -19,10 +20,12 @@ class BashScriptSpec extends Specification {
   val inlineTemplateWithAnotherInline = """foo, !inline(echo !inline(file://src/test/data/just_bar.txt)), baz"""
   val twoInlines = """foo, !inline(echo bar), baz, !inline(echo quux)"""
   val inlineWithPipe = """foo, !inline(echo bar | grep bar), baz"""
+  val echoWithPipeInside = """foo !inline(echo "bar|, baz")"""
 
 
   def e1 = inline(inlineTemplate) must_==expectedOutput
   def e2 = inline(inlineTemplateWithAnotherInline) must_==expectedOutput
   def e3 = inline(twoInlines) must_=="foo, bar, baz, quux"
   def e4 = inline(inlineWithPipe) must_==expectedOutput
+  def e5 = inline(echoWithPipeInside) must_=="foo \"bar|, baz\""
 }

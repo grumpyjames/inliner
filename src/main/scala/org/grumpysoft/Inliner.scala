@@ -1,16 +1,18 @@
 package org.grumpysoft
 
-import scala.sys.process.Process
+import parser.CommandParser
+import runner.CommandRunner
 import java.lang.String
-import java.io.{BufferedReader, InputStreamReader, File}
+import java.io.{FileInputStream, BufferedReader, InputStreamReader, File}
+import util.parsing.input.CharSequenceReader
 
 object Inliner {
   def main(args: Array[String]) {
-    val converter = new InputStreamReader(System.in)
+    val converter = new InputStreamReader(new FileInputStream("/home/james/blogs/move_constructors/post.md.il"))
     val reader = new BufferedReader(converter)
     var thisLine: String = reader.readLine
     while (thisLine != null) {
-      System.out.println(doReplacements(thisLine, defaultFileFinder));
+      System.out.println(doReplacements(thisLine, defaultFileFinder))
       thisLine = reader.readLine
     }
   }
@@ -37,8 +39,10 @@ object Inliner {
   }
 
   private def doCmdLineInvoc(command: String) : String = {
-    val pipedCommand = command.split('|').map(_.trim()).map(Process(_)).reduceLeft(_ #| _)
-    replaceThenJoin(pipedCommand.lines, defaultFileFinder).stripLineEnd
+    val parseResult = new CommandParser().fullyParse(new CharSequenceReader(command))
+    val process = new CommandRunner().run(parseResult.map(_.get).toList)
+
+    replaceThenJoin(process.lines, defaultFileFinder).stripLineEnd
   }
 
   private def replaceThenJoin(lines: TraversableOnce[String], finder: Finder) : String = {
