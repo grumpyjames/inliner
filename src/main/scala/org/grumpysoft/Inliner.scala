@@ -8,7 +8,7 @@ import util.parsing.input.CharSequenceReader
 
 object Inliner {
   def main(args: Array[String]) {
-    val converter = new InputStreamReader(new FileInputStream("/home/james/blogs/move_constructors/post.md.il"))
+    val converter = new InputStreamReader(System.in)
     val reader = new BufferedReader(converter)
     var thisLine: String = reader.readLine
     while (thisLine != null) {
