@@ -29,6 +29,10 @@ class CommandParser extends JavaTokenParsers {
 
   def commandParser: Parser[Expression] = pipe | redirectInput | literally | fragment
 
+  def fullyParse(in: String) : List[Expression] = {
+    fullyParse(new CharSequenceReader(in)).map(_.get).toList
+  }
+
   def fullyParse(in: CharSequenceReader) : Stream[ParseResult[Expression]] = {
     showNextParsed(in)
   }
