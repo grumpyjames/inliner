@@ -22,13 +22,6 @@ object RedirectInput extends Expression {
 
 class CommandParser extends JavaTokenParsers {
 
-  def pipe: Parser[Expression] = "|" ^^ {_ => Pipe}
-  def redirectInput: Parser[Expression] = "<" ^^ {_ => RedirectInput}
-  def literally: Parser[Expression] = regex(("\""+"""([^"\p{Cntrl}\\]|\\[\\/bfnrt]|\\u[a-fA-F0-9]{4})*"""+"\"").r) ^^ {s => new Fragment(s)}
-  def fragment: Parser[Expression] = regex(new Regex("[^\\s|^\\||^>]+")) ^^ {s => new Fragment(s)}
-
-  def commandParser: Parser[Expression] = pipe | redirectInput | literally | fragment
-
   def fullyParse(in: String) : List[Expression] = {
     fullyParse(new CharSequenceReader(in)).map(_.get).toList
   }
@@ -37,7 +30,14 @@ class CommandParser extends JavaTokenParsers {
     showNextParsed(in)
   }
 
-  def showNextParsed(in: Input) : Stream[ParseResult[Expression]] = {
+  private def pipe: Parser[Expression] = "|" ^^ {_ => Pipe}
+  private def redirectInput: Parser[Expression] = "<" ^^ {_ => RedirectInput}
+  private def literally: Parser[Expression] = regex(("\""+"""([^"\p{Cntrl}\\]|\\[\\/bfnrt]|\\u[a-fA-F0-9]{4})*"""+"\"").r) ^^ {s => new Fragment(s)}
+  private def fragment: Parser[Expression] = regex(new Regex("[^\\s|^\\||^>]+")) ^^ {s => new Fragment(s)}
+
+  private def commandParser: Parser[Expression] = pipe | redirectInput | literally | fragment
+
+  private def showNextParsed(in: Input) : Stream[ParseResult[Expression]] = {
     if(in.atEnd) {
       Stream.empty[ParseResult[Expression]]
     }
