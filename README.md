@@ -14,7 +14,7 @@ So, a particular usage could be:
 
     It turns out that all we need to do is call std::move in the constructor:
 
-    !inline(sed -n 5,11p \< move_constructor.cpp)
+    !inline(sed -n 5,11p < move_constructor.cpp)
 
 Let's say this lives in blog.md.il. If we run inliner over this file, it will *inline* the contents of `sed -n 5,11p < move_constructor.cpp`'s stdout in place of the declaration.
 
