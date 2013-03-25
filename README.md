@@ -52,3 +52,27 @@ Further examples
 ================
 
 Please see the specifications in `src/test/`
+
+Experimental features
+=====================
+How can you be sure that code that you inline actually compiles? Well, you can declare a list of build dependencies at the start of your file, like this:
+
+<pre>
+!dependencies ({
+g++ -Wall -std=c++0x main.cpp
+./a.out
+})
+</pre>
+
+Inliner will execute these commands as if they were a script; if any of them fail (return an exit code greater than 0) then inliner will refuse to process the rest of your file. The stderr of any dependency script is output as part of the inlining process.
+
+If you want to use this feature, currently the dependencies must be declared at the top of the file, in precisely the format used in the example, i.e
+
+<pre>
+!dependencies ({
+one
+command
+per
+line
+})
+</pre>
