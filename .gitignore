@@ -1,4 +1,5 @@
 .idea_modules/
 .idea/
 target/
-project/
+project/boot/
+project/target/
